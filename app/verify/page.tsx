@@ -14,7 +14,7 @@ const VerifyAccountPage = () => {
   const handleVerify = async () => {
     setLoading(true); // Start loading when verifying
     setError(null); // Clear any previous errors
-    
+
     try {
       // Get the verification token (verificationId) from the URL query parameters
       const urlParams = new URLSearchParams(window.location.search);
@@ -42,22 +42,14 @@ const VerifyAccountPage = () => {
         },
       );
 
-      if (response.status === 200) {
-        const { access_token, refresh_token } = response.data;
+      const { access_token, refresh_token } = response.data;
 
-        // Save the tokens in localStorage or cookies
-        localStorage.setItem("access_token", access_token);
-        localStorage.setItem("refresh_token", refresh_token);
+      localStorage.setItem("access_token", access_token);
+      localStorage.setItem("refresh_token", refresh_token);
 
-        setSuccess(true);
+      setSuccess(true);
 
-        // Redirect to login after a short delay
-        setTimeout(() => {
-          router.push("/login");
-        }, 1000); // Delay the redirect slightly to show success message
-      } else {
-        setError("Account verification faild");
-      }
+      setTimeout(() => router.push("/login"), 1000);
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
@@ -68,46 +60,29 @@ const VerifyAccountPage = () => {
     }
   };
 
-  const handleRedirect = () => {
-    router.push("/login");
-  };
-
-  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setOtp(e.target.value); // Update OTP input
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return (
-      <div>
-        <p>Error: {error}</p>
-        <button onClick={() => router.push("/login")}>Go to Login</button>
-      </div>
-    );
-  }
-
-  if (success) {
-    return (
-      <div>
-        <p>Your account has been successfully verified!</p>
-        <button onClick={() => router.push("/login")}>Go to Login</button>
-      </div>
-    );
-  }
-
   return (
     <div>
-      <p>Please enter the OTP sent to your email:</p>
-      <input
-        type="text"
-        placeholder="Enter OTP"
-        value={otp}
-        onChange={handleOtpChange}
-      />
-      <button onClick={handleVerify}>Verify</button>
+      {success ? (
+        <div>
+          <p>Your account has been successfully verified!</p>
+          <button onClick={() => router.push("/login")}>Go to Login</button>
+        </div>
+      ) : (
+        <div>
+          <p>Please enter the OTP sent to your email:</p>
+          <input
+            type="text"
+            placeholder="Enter OTP"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            disabled={loading}
+          />
+          <button onClick={handleVerify} disabled={loading || !otp.trim()}>
+            {loading ? "Verifying..." : "Verify"}
+          </button>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+        </div>
+      )}
     </div>
   );
 };
