@@ -1,4 +1,4 @@
-"use client"; // Required for Next.js App Router
+"use client"; 
 
 import { persistor, store } from "@/store/store";
 import { ReactNode } from "react";

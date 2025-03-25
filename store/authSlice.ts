@@ -7,6 +7,7 @@ import {
   LoginData,
   OTPData,
   ResetPasswordData,
+  VerifyOTPResponse,
 } from "../types/authTypes";
 
 const API_URL = "http://localhost:3000"; // Replace with your backend URL
@@ -35,7 +36,7 @@ export const signup = createAsyncThunk(
 );
 
 export const login = createAsyncThunk(
-  "auth/signin",
+  "client/signin",
   async (userData: LoginData, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${API_URL}/client/signin`, userData);

@@ -4,37 +4,29 @@ import { useForm } from "react-hook-form";
 import axios from "../lib/axios";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { AppDispatch } from "@/store/store";
+import { useDispatch } from "react-redux";
+import { login } from "@/store/authSlice";
 
 export default function Login() {
   const { register, handleSubmit } = useForm();
   const router = useRouter();
-
-  useEffect(() => {
-    // Check if the access token is available in localStorage
-    const accessToken = localStorage.getItem("access_token");
-    if (accessToken) {
-      // Automatically log the user in by setting the token in the request headers
-      axios.defaults.headers["Authorization"] = `Bearer ${accessToken}`;
-      // Redirect the user to a protected page or home page
-      router.push("/home"); // Change this to wherever the user should be redirected
-    }
-  }, [router]);
+  const dispatch = useDispatch<AppDispatch>();
 
   const onSubmit = async (data: any) => {
     try {
-      const response = await axios.post("client/login", data);
+      const response = await dispatch(login(data)).unwrap();
 
       // Assuming the response contains the tokens
-      const { access_token, refresh_token } = response.data;
+      const { access_token, refresh_token } = response;
       // Save tokens in localStorage or cookies
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("refresh_token", refresh_token);
 
       // Set authorization header for future requests
       axios.defaults.headers["Authorization"] = `Bearer ${access_token}`;
-
-      // Redirect to home page or another protected page
-      router.push("/home"); // Change this to the appropriate page
+      
+      router.push("/home"); 
     } catch (err: any) {
       console.error(err);
     }

@@ -1,90 +1,114 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { OTPData } from "@/types/authTypes";
+import { verifyOTP } from "@/store/authSlice";
+import { useDispatch } from "react-redux";
+import { useForm } from "react-hook-form";
 import axios from "axios";
+import { AppDispatch } from "@/store/store";
 
-const VerifyAccountPage = () => {
-  const [loading, setLoading] = useState(false); // Set loading to false initially
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [otp, setOtp] = useState(""); // State to store OTP input
+export default function VerifyAccount() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dispatch = useDispatch<AppDispatch>();
+  const { register, handleSubmit } = useForm<{ otp: string }>();
 
-  const handleVerify = async () => {
-    setLoading(true); // Start loading when verifying
-    setError(null); // Clear any previous errors
+  const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = searchParams.get("verificationId");
+    if (id) setVerificationId(id);
+  }, [searchParams]);
+
+  const onSubmit = async (data: { otp: string }) => {
+    if (!verificationId) {
+      setErrorMessage("verification ID is missing");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    const otpData: OTPData = {
+      verificationId,
+      otp: data.otp,
+      isOtp: true,
+    };
 
     try {
-      // Get the verification token (verificationId) from the URL query parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const verificationId = urlParams.get("verificationId");
+      const response = await dispatch(verifyOTP(otpData)).unwrap();
+      console.log(response);
 
-      if (!verificationId) {
-        setError("Verification ID is missing.");
-        setLoading(false);
-        return;
+      if (response) {
+        setSuccessMessage("Account verified successfully!");
+        router.push("/login");
+      } else {
+        setErrorMessage("OTP verification failed.");
       }
-
-      if (!otp) {
-        setError("OTP is required for verification.");
-        setLoading(false);
-        return;
-      }
-
-      // Make the request to verify the account with the necessary body
-      const response = await axios.post(
-        "http://localhost:3000/client/verifyAccount",
-        {
-          verificationId,
-          otp,
-          isOtp: true, // Assuming the verification requires OTP
-        },
-      );
-
-      const { access_token, refresh_token } = response.data;
-
-      localStorage.setItem("access_token", access_token);
-      localStorage.setItem("refresh_token", refresh_token);
-
-      setSuccess(true);
-
-      setTimeout(() => router.push("/login"), 1000);
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          "Something went wrong during verification.",
-      );
+    } catch (error) {
+      setErrorMessage("OTP verification failed. Please try again.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+    }
+  };
+
+  const resendOTP = async () => {
+    if (!verificationId) {
+      setErrorMessage("Cannot resend OTP without a verification ID.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await axios.post("/client/resendOTP", { verificationId, isOtp: true });
+      setSuccessMessage("A new OTP has been sent to your email.");
+    } catch (error) {
+      setErrorMessage("Failed to resend OTP. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div>
-      {success ? (
-        <div>
-          <p>Your account has been successfully verified!</p>
-          <button onClick={() => router.push("/login")}>Go to Login</button>
-        </div>
-      ) : (
-        <div>
-          <p>Please enter the OTP sent to your email:</p>
-          <input
-            type="text"
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            disabled={loading}
-          />
-          <button onClick={handleVerify} disabled={loading || !otp.trim()}>
-            {loading ? "Verifying..." : "Verify"}
-          </button>
-          {error && <p style={{ color: "red" }}>{error}</p>}
-        </div>
-      )}
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="bg-white p-6 rounded-lg shadow-md w-96">
+        <h2 className="text-2xl font-bold mb-4">Verify Your Account</h2>
+        {errorMessage && (
+          <p className="text-red-500 text-sm mb-2">{errorMessage}</p>
+        )}
+        {successMessage && (
+          <p className="text-green-500 text-sm mb-2">{successMessage}</p>
+        )}
+
+        <input
+          {...register("otp", { required: true })}
+          placeholder="Enter OTP"
+          className="w-full p-2 border rounded mb-2"
+        />
+
+        <button
+          type="submit"
+          className="bg-blue-500 text-white w-full p-2 rounded"
+          disabled={isLoading}>
+          {isLoading ? "Verifying..." : "Verify OTP"}
+        </button>
+
+        <button
+          type="button"
+          onClick={resendOTP}
+          className="mt-2 bg-gray-500 text-white w-full p-2 rounded"
+          disabled={isLoading}>
+          {isLoading ? "Resending..." : "Resend OTP"}
+        </button>
+      </form>
     </div>
   );
-};
-
-export default VerifyAccountPage;
+}

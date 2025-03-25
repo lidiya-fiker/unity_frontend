@@ -37,3 +37,7 @@ export interface ResetPasswordData {
   newPassword: string;
   isOtp: true;
 }
+export interface VerifyOTPResponse {
+  message?: string;
+ 
+}
