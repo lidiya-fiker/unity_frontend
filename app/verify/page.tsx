@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { OTPData } from "@/types/authTypes";
-import { verifyOTP } from "@/store/authSlice";
+import { OTPData, OTPDataResend } from "@/types/authTypes";
+import { ResendOTP, verifyOTP } from "@/store/authSlice";
 import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import axios from "axios";
@@ -15,7 +15,7 @@ export default function VerifyAccount() {
   const dispatch = useDispatch<AppDispatch>();
   const { register, handleSubmit } = useForm<{ otp: string }>();
 
-  const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [verificationId, setVerificationId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -60,14 +60,23 @@ export default function VerifyAccount() {
 
   const resendOTP = async () => {
     if (!verificationId) {
-      setErrorMessage("Cannot resend OTP without a verification ID.");
+      setErrorMessage("Verification ID is missing");
       return;
     }
 
+    const resendData: OTPDataResend = { verificationId };
+
     try {
       setIsLoading(true);
-      await axios.post("/client/resendOTP", { verificationId, isOtp: true });
-      setSuccessMessage("A new OTP has been sent to your email.");
+      const response = await dispatch(ResendOTP(resendData));
+      console.log("Resend Response:", response);
+      console.log("New Verification ID:", response.payload?.verificationId);
+      if (response.payload?.verificationId) {
+        // Redirect to the verify page with the verificationId
+        router.replace(
+          `/verify?verificationId=${response.payload.verificationId}`,
+        );
+      }
     } catch (error) {
       setErrorMessage("Failed to resend OTP. Please try again.");
     } finally {

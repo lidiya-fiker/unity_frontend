@@ -7,7 +7,8 @@ import {
   LoginData,
   OTPData,
   ResetPasswordData,
-  VerifyOTPResponse,
+  OTPDataResend,
+  ForgetPasswordData,
 } from "../types/authTypes";
 
 const API_URL = "http://localhost:3000"; // Replace with your backend URL
@@ -58,6 +59,36 @@ export const verifyOTP = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "OTP Verification failed");
+    }
+  },
+);
+
+export const ResendOTP = createAsyncThunk(
+  "client/resend-otp",
+  async (verificationId: OTPDataResend, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/client/resend-otp`,
+        verificationId,
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "resend otp failed");
+    }
+  },
+);
+
+export const ForgetPassword = createAsyncThunk(
+  "client/forget-password",
+  async (forgetPassword: ForgetPasswordData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/client/forget-password`,
+        forgetPassword,
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "resend otp failed");
     }
   },
 );

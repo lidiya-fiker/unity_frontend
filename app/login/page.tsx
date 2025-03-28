@@ -25,8 +25,8 @@ export default function Login() {
 
       // Set authorization header for future requests
       axios.defaults.headers["Authorization"] = `Bearer ${access_token}`;
-      
-      router.push("/home"); 
+
+      router.push("/home");
     } catch (err: any) {
       console.error(err);
     }
@@ -59,6 +59,12 @@ export default function Login() {
           className="mt-2 bg-red-500 text-white w-full p-2 rounded">
           Login with Google
         </button>
+
+        <p className="text-center mt-3">
+          <a href="/forget-password" className="text-blue-500 hover:underline">
+            Forgot Password?
+          </a>
+        </p>
       </form>
     </div>
   );

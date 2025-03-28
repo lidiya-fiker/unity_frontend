@@ -31,13 +31,17 @@ export interface OTPData {
   isOtp: true;
 }
 
-export interface ResetPasswordData {
+export interface OTPDataResend {
   verificationId: string;
-  otp: string;
+}
+
+export interface ResetPasswordData {
+  token: string;
   newPassword: string;
-  isOtp: true;
 }
 export interface VerifyOTPResponse {
   message?: string;
- 
+}
+export interface ForgetPasswordData {
+  email: string;
 }
