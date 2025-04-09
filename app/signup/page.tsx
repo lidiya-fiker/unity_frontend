@@ -21,16 +21,14 @@ export default function Signup() {
   const onSubmit = async (data: SignupData) => {
     try {
       setIsLoading(true);
-      setErrorMessage(null); // Reset previous error message
+      setErrorMessage(null);
       const response = await dispatch(signup(data));
       console.log(response);
-       if (response.payload?.verificationId) {
-         // Redirect to the verify page with the verificationId
-         router.push(
-           `/verify?verificationId=${response.payload.verificationId}`,
-         );
-       }
-  
+      if (response.payload?.verificationId) {
+        router.push(
+          `/verify?verificationId=${response.payload.verificationId}`,
+        );
+      }
     } catch (error) {
       setErrorMessage("Signup failed, please try again.");
     } finally {
@@ -40,7 +38,21 @@ export default function Signup() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div>
+        <label className="block mb-1 font-medium">Register As</label>
+        <select
+          {...register("role", { required: "Role is required" })}
+          className="border p-2 w-full">
+          <option value="">Select Role</option>
+          <option value="CLIENT">Client</option>
+          <option value="COUNSELOR">Counselor</option>
+        </select>
+        {errors.role && (
+          <p className="text-red-500 text-sm">{errors.role.message}</p>
+        )}
+      </div>
       {/* First Name */}
+
       <div>
         <input
           {...register("firstName", { required: "First name is required" })}
@@ -79,18 +91,6 @@ export default function Signup() {
         )}
       </div>
 
-      {/* Username */}
-      <div>
-        <input
-          {...register("username", { required: "Username is required" })}
-          placeholder="Username"
-          className="border p-2 w-full"
-        />
-        {errors.username && (
-          <p className="text-red-500 text-sm">{errors.username.message}</p>
-        )}
-      </div>
-
       {/* Password */}
       <div>
         <input
@@ -107,21 +107,6 @@ export default function Signup() {
             {errors.password.message ||
               "Password must be at least 6 characters"}
           </p>
-        )}
-      </div>
-
-      {/* Gender */}
-      <div>
-        <select
-          {...register("gender", { required: "Gender is required" })}
-          className="border p-2 w-full">
-          <option value="">Select Gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-        </select>
-        {errors.gender && (
-          <p className="text-red-500 text-sm">{errors.gender.message}</p>
         )}
       </div>
 

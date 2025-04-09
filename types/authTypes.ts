@@ -15,9 +15,8 @@ export interface SignupData {
   firstName: string;
   lastName: string;
   email: string;
-  username: string;
   password: string;
-  gender: string;
+  role: string;
 }
 
 export interface LoginData {

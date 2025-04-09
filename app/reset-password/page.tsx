@@ -2,18 +2,12 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
-import axios from "../lib/axios";
 import { resetPassword } from "@/store/authSlice";
 import { AppDispatch } from "@/store/store";
 import { useDispatch } from "react-redux";
 
 export default function ResetPassword() {
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors },
-  } = useForm();
+  const { register, handleSubmit } = useForm();
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
