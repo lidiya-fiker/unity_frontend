@@ -48,6 +48,12 @@ export default function ResetPassword() {
           placeholder="New Password"
           className="w-full p-2 border rounded mb-2"
         />
+        <input
+          {...register("confirmPassword")}
+          type="password"
+          placeholder="Confirm password"
+          className="w-full p-2 border rounded mb-2"
+        />
 
         <button
           type="submit"
